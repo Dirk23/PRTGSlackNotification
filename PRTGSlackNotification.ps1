@@ -41,7 +41,7 @@ $attachments =  ConvertTo-Json -Depth 4 @(@{
 					short = 1
 				}
 				@{
-					title = "Status seit"
+					title = "Status seid"
 					value = $StateSince
 					short = 1
 				}
