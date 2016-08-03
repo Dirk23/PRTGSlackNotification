@@ -7,7 +7,7 @@
 # You must not remove this notice, or any other, from this software.
 # ----------------------------------------------------------------------------------------------
 Param(
-    [string]$SlackToken,
+	[string]$SlackToken,
     [string]$SlackChannel,
     [string]$SiteName,
     [string]$Device,
@@ -16,19 +16,51 @@ Param(
     [string]$Down,
     [string]$DateTime,
     [string]$LinkDevice,
-    [string]$Message
+    [string]$Message,
+	[string]$ColorofState,
+    [string]$LinkSensor,
+	[string]$LastCheck,
+	[string]$StateSince,
+	[string]$LastMessage
 )
+
+$attachments =  ConvertTo-Json -Depth 4 @(@{
+        fallback    = "New notification for $($Device) - $($Name) is $($Status) $($Down). $($LinkDevice)"
+        title       = "${Name}: Status $($Status) $($Down)"
+        title_link  = $LinkSensor
+        color       = $ColorofState
+        text        = $Message
+		fields		= @( @{
+					title = "Date"
+					value = $DateTime
+					short = 1
+				}
+				@{
+					title = "Letzte Ueberpruefung"
+					value = $LastCheck
+					short = 1
+				}
+				@{
+					title = "Status seit"
+					value = $StateSince
+					short = 1
+				}
+				@{
+					title = "Letzte Meldung"
+					value = $LastMessage
+					short = 1
+				}
+			)
+    })
 $postSlackMessage = @{
-    token        = $SlackToken;
-    channel      = $SlackChannel;
-    unfurl_links = "true";
-    username     = "PRTG";
-    icon_url     = "http://www.paessler.com/static/banner_1s_80x80.png"
-    text         = "*$($sitename)*
-<$($LinkDevice)|$($Device) $($Name)>
-Status $($Status) $($Down) on $($DateTime)
-``````$($Message)``````";
-    }
+    token        = $SlackToken
+    channel      = $SlackChannel
+    unfurl_links = "true"
+    username     = $sitename
+	text 		= "*New notification* for <$($LinkDevice)|$($Device)>"
+	attachments	 = $attachments
+}
+
 $postSlackMessage | Out-File -FilePath slack.log
 $postSlackMessage.text  | Out-File -FilePath slack.log -Append
 Invoke-RestMethod -Uri https://slack.com/api/chat.postMessage -Body $postSlackMessage | Out-File -FilePath slack.log -Append
